@@ -86,7 +86,7 @@ resource "azurerm_route_table" "naga_12rt" {
   }
 
   tags = {
-    environment = "dev"
+    environment = "naga12"
   }
 }
 
