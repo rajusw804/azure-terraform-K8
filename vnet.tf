@@ -38,7 +38,6 @@ resource "azurerm_subnet" "naga_12subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-#
 # azurerm_network_security_group
 
 resource "azurerm_network_security_group" "naga_12sg" {
@@ -87,7 +86,7 @@ resource "azurerm_route_table" "naga_12rt" {
   }
 
   tags = {
-    environment = "dev"
+    environment = "naga12"
   }
 }
 
