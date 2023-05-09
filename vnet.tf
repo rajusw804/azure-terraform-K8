@@ -44,7 +44,7 @@ resource "azurerm_network_security_group" "naga_12sg" {
   name                = "naga_12sg"
   location            = azurerm_resource_group.naga_12rg.location
   resource_group_name = azurerm_resource_group.naga_12rg.name
-tags = {
+  tags = {
     environment = "dev"
   }
 } 
