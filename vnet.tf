@@ -29,7 +29,7 @@ resource "azurerm_virtual_network" "naga_12vnet" {
   address_space       = ["10.0.0.0/16"]
 }
 
-# azurerm_subnet
+# Create azurerm_subnet
 
 resource "azurerm_subnet" "naga_12subnet" {
   name                 = "naga_12subnet"
@@ -38,7 +38,20 @@ resource "azurerm_subnet" "naga_12subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# azurerm_network_security_group
+# Create azurerm_public_ip
+
+resource "azurerm_public_ip" "naga_12-azurerm_public_ip" {
+  name                = "naga_12-public_ip"
+  resource_group_name = azurerm_resource_group.naga_12rg.name
+  location            = azurerm_resource_group.naga_12rg.location
+  allocation_method   = "Dynamic"
+
+  tags = {
+    environment = "dev"
+  }
+}
+
+# create azurerm_network_security_group
 
 resource "azurerm_network_security_group" "naga_12sg" {
   name                = "naga_12sg"
@@ -49,13 +62,14 @@ resource "azurerm_network_security_group" "naga_12sg" {
   }
 } 
 
-# azure azurerm_network_security_rule
+# create azure azurerm_network_security_rule
+
 resource "azurerm_network_security_rule" "naga-12-dev-sg" {
   name                        = "naga-12-dev-sg"
   priority                    = 100
   direction                   = "Inbound"
   access                      = "Allow"
-  protocol                    = "*"
+  protocol                    = "Tcp"
   source_port_range           = "*"
   destination_port_range      = "*"
   source_address_prefix       = "*"
@@ -64,14 +78,35 @@ resource "azurerm_network_security_rule" "naga-12-dev-sg" {
   network_security_group_name = azurerm_network_security_group.naga_12sg.name
 }
 
-#azurerm_subnet_network_security_group_association
+# create azurerm_network_interface
+
+resource "azurerm_network_interface" "naga_12az-nic" {
+  name                = "naga_12az-nic"
+  location            = azurerm_resource_group.naga_12rg.location
+  resource_group_name = azurerm_resource_group.naga_12rg.name
+
+  ip_configuration {
+    name                          = "naga_12subnet"
+    subnet_id                     = azurerm_subnet.naga_12subnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.naga_12-azurerm_public_ip.id
+  }
+} 
+
+# Connect the security group to the network interface
+resource "azurerm_network_interface_security_group_association" "naga_12-sg-acco" {
+  network_interface_id      = azurerm_network_interface.naga_12az-nic.id
+  network_security_group_id = azurerm_network_security_group.naga_12sg.id
+}
+
+# create azurerm_subnet_network_security_group_association
 
 resource "azurerm_subnet_network_security_group_association" "naga_12nsg_assoc" {
   subnet_id                 = azurerm_subnet.naga_12subnet.id
   network_security_group_id = azurerm_network_security_group.naga_12sg.id
 }
 
-# azurerm_route_table
+# create azurerm_route_table
 
 resource "azurerm_route_table" "naga_12rt" {
   name                          = "naga_12_route_table"
@@ -90,8 +125,42 @@ resource "azurerm_route_table" "naga_12rt" {
   }
 }
 
+# create azurerm_subnet_route_table_association
+
 resource "azurerm_subnet_route_table_association" "naga_12subnet_route_table_assoc" {
   subnet_id      = azurerm_subnet.naga_12subnet.id
   route_table_id = azurerm_route_table.naga_12rt.id
+}
+
+# create azurerm_linux_virtual_machine
+
+resource "azurerm_linux_virtual_machine" "naga_12-vm" {
+  name                = "naga12vm"
+  resource_group_name = azurerm_resource_group.naga_12rg.name
+  location            = azurerm_resource_group.naga_12rg.location
+  size                = "Standard_F2"
+  admin_username      = "adminuser"
+  network_interface_ids = [
+    azurerm_network_interface.naga_12az-nic.id,
+  ]
+
+  admin_ssh_key {
+    username   = "adminuser"
+    public_key = <<-EOT
+         ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQColOtAOZCA7F+bqA2/fVNzMaDaCT0vXMEfv04GbrZJCOYMqcb+HoBP6vQdHuol+8910ic5agp/z7hHtlLXtCeQtBFVIDHGuw4StFDT3vvYsGs5KtjzPsKCiLFNfdeOTMoim5dD4vJrExAa7dJ510TN4vkYB8T92nyut6z4cXLPeG+IfMFssOiuB9IQJfA39hpO4tvY6rBi4UbCsTbtG9/6BItYgvVfMERzJKhW/cKMN9dnFzCosx9uQSOjy9nGhlvMeSwvLtkPRKZFSs+To+Uii6OEHe3b69W/q1/3+OJJg5PVfgFaZqTz1itXP2rDmIQX7f3qfmy2iQHokynFo/0wcNZoTYtQF2Gt4ykcmqlNikr4k3EKayIbc/4IMma6sOkJINp6iAVGfajbZLPX8isjPsa/WPWa6IPmGgyLJUrkwV0qkJ53ZDBPemTW+21RrfZA6n6tLkFn4zl4s+bWpSsRrNXcfhhfcmfWWm9zSmbgmKMcLNXuE0KGdXsyVycNX2U= genrated by azure
+      EOT
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "16.04-LTS"
+    version   = "latest"
+  }
 }
 
