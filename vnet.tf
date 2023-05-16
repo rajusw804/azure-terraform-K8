@@ -147,7 +147,7 @@ resource "azurerm_linux_virtual_machine" "naga_12-vm" {
   admin_ssh_key {
     username   = "adminuser"
     public_key = <<-EOT
-         ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQColOtAOZCA7F+bqA2/fVNzMaDaCT0vXMEfv04GbrZJCOYMqcb+HoBP6vQdHuol+8910ic5agp/z7hHtlLXtCeQtBFVIDHGuw4StFDT3vvYsGs5KtjzPsKCiLFNfdeOTMoim5dD4vJrExAa7dJ510TN4vkYB8T92nyut6z4cXLPeG+IfMFssOiuB9IQJfA39hpO4tvY6rBi4UbCsTbtG9/6BItYgvVfMERzJKhW/cKMN9dnFzCosx9uQSOjy9nGhlvMeSwvLtkPRKZFSs+To+Uii6OEHe3b69W/q1/3+OJJg5PVfgFaZqTz1itXP2rDmIQX7f3qfmy2iQHokynFo/0wcNZoTYtQF2Gt4ykcmqlNikr4k3EKayIbc/4IMma6sOkJINp6iAVGfajbZLPX8isjPsa/WPWa6IPmGgyLJUrkwV0qkJ53ZDBPemTW+21RrfZA6n6tLkFn4zl4s+bWpSsRrNXcfhhfcmfWWm9zSmbgmKMcLNXuE0KGdXsyVycNX2U= genrated by azure
+         private-key or public-key
       EOT
   }
 
